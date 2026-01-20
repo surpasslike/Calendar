@@ -1,0 +1,50 @@
+@startuml
+left to right direction
+skinparam dpi 300
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontSize 16
+scale 1.5
+
+title Calendar用例图
+
+actor 用户 as User
+actor 系统通知 as System
+
+rectangle "日历习惯 App" {
+  usecase "查看日历" as UC1
+  usecase "管理事件\n(增删改)" as UC2
+  usecase "管理习惯\n(增删改)" as UC3
+  usecase "打卡习惯" as UC4
+  usecase "接收通知" as UC5
+  usecase "设置事件提醒" as UC6
+  usecase "设置习惯提醒" as UC7
+}
+
+' 用户的主要操作
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+User --> UC5
+
+' 系统自动功能
+System --> UC5
+
+' 包含关系：管理事件/习惯时可以设置提醒
+UC2 ..> UC6 : <<include>>
+UC3 ..> UC7 : <<include>>
+
+' 扩展关系：提醒触发通知
+UC5 <.. UC6 : <<extend>>
+UC5 <.. UC7 : <<extend>>
+
+note right of User
+<b>用例说明：</b>
+1. 查看日历：查看日历及当日事件/习惯
+2. 管理事件：增删改事件，可设置提醒
+3. 管理习惯：增删改习惯，可设置提醒
+4. 打卡习惯：完成/取消今日习惯
+5. 接收通知：系统根据提醒时间发送通知
+end note
+
+@enduml
