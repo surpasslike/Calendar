@@ -1,0 +1,53 @@
+  @startuml
+  skinparam dpi 300
+  skinparam backgroundColor #FFFFFF
+  skinparam defaultFontSize 14
+
+  title Calendar App 架构图 (MVVM)
+
+  ' === View 界面层 ===
+  package "View 界面层" <<view>> {
+      [日历主界面\nCalendarFragment]
+      [日程编辑界面\nScheduleFragment]
+      [习惯编辑界面\nHabitFragment]
+  }
+
+  ' === ViewModel 逻辑层 ===
+  package "ViewModel 逻辑层" <<viewmodel>> {
+      [CalendarViewModel\n处理日历和列表逻辑]
+      [ScheduleViewModel\n处理日程增删改]
+      [HabitViewModel\n处理习惯增删改]
+  }
+
+  ' === Repository 仓库层 ===
+  package "Repository 仓库层" <<repository>> {
+      [CalendarRepository\n统一管理数据访问]
+  }
+
+  ' === Data 数据层 ===
+  package "Data 数据层" <<data>> {
+      [Room 数据库\nScheduleDao / HabitDao / HabitRecordDao]
+      [实体类\nSchedule / Habit / HabitRecord]
+  }
+
+  ' === 通知模块 ===
+  package "通知模块" <<notification>> {
+      [AlarmManager\n定时触发]
+      [NotificationManager\n发送通知]
+  }
+
+  ' === 连接关系 ===
+  [日历主界面\nCalendarFragment] -down-> [CalendarViewModel\n处理日历和列表逻辑] : 观察数据
+  [日程编辑界面\nScheduleFragment] -down-> [ScheduleViewModel\n处理日程增删改] : 观察数据
+  [习惯编辑界面\nHabitFragment] -down-> [HabitViewModel\n处理习惯增删改] : 观察数据
+
+  [CalendarViewModel\n处理日历和列表逻辑] -down-> [CalendarRepository\n统一管理数据访问]
+  [ScheduleViewModel\n处理日程增删改] -down-> [CalendarRepository\n统一管理数据访问]
+  [HabitViewModel\n处理习惯增删改] -down-> [CalendarRepository\n统一管理数据访问]
+
+  [CalendarRepository\n统一管理数据访问] -down-> [Room 数据库\nScheduleDao / HabitDao / HabitRecordDao]
+  [CalendarRepository\n统一管理数据访问] .right.> [AlarmManager\n定时触发]
+
+  [AlarmManager\n定时触发] -down-> [NotificationManager\n发送通知]
+
+  @enduml
