@@ -1,0 +1,35 @@
+@startuml
+  skinparam dpi 300
+  skinparam backgroundColor #FFFFFF
+  skinparam defaultFontSize 14
+
+package "View 界面层" {
+    [Fragment]
+}
+
+package "ViewModel 逻辑层" {
+    [ViewModel + LiveData] as VM
+}
+
+package "Repository 仓库层" {
+    [CalendarRepository] as Repo
+}
+
+package "Data 数据层" {
+    [DAO]
+    database "Room Database" as DB
+}
+
+' 请求方向（实线）
+Fragment --> VM : 用户操作
+VM --> Repo : 数据请求
+Repo --> DAO : 数据库操作
+DAO --> DB : SQL
+
+' 返回方向（虚线）
+DB ..> DAO : 数据
+DAO ..> Repo : 数据
+Repo ..> VM : LiveData
+VM ..> Fragment : 观察更新
+
+@enduml
