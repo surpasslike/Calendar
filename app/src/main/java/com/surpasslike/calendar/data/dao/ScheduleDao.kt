@@ -8,6 +8,9 @@ import androidx.room.Update
 import com.surpasslike.calendar.data.entity.ScheduleEntity
 import kotlinx.coroutines.flow.Flow
 
+/*
+* 数据访问对象,定义数据库的操作方法:增删改查
+* */
 @Dao
 interface ScheduleDao {
     // 增: 新增日程到仓库中
