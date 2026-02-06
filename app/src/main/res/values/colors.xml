@@ -2,4 +2,9 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- 优先级颜色 -->
+    <color name="priority_important">#FFE53935</color>
+    <color name="priority_moderate">#FFFFA726</color>
+    <color name="priority_normal">#FFBDBDBD</color>
 </resources>

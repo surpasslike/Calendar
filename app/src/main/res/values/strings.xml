@@ -1,3 +1,67 @@
 <resources>
     <string name="app_name">Calendar</string>
+
+    <!-- 日程列表 -->
+    <string name="all_day">全天</string>
+
+    <!-- 日程编辑页 -->
+    <string name="title_add_schedule">添加日程</string>
+    <string name="title_edit_schedule">编辑日程</string>
+    <string name="hint_title">标题</string>
+    <string name="hint_description">描述（可选）</string>
+    <string name="label_date">日期</string>
+    <string name="label_all_day">全天</string>
+    <string name="label_start_time">开始时间</string>
+    <string name="label_end_time">结束时间</string>
+    <string name="label_repeat">重复</string>
+    <string name="label_priority">优先级</string>
+    <string name="label_reminder">提醒</string>
+    <string name="btn_save">保存</string>
+    <string name="btn_delete">删除</string>
+
+    <!-- 重复规则选项 -->
+    <string name="repeat_none">不重复</string>
+    <string name="repeat_daily">每天</string>
+    <string name="repeat_weekly">每周</string>
+    <string name="repeat_monthly">每月</string>
+    <string name="repeat_yearly">每年</string>
+
+    <!-- 优先级选项 -->
+    <string name="priority_normal">日常</string>
+    <string name="priority_moderate">次重要</string>
+    <string name="priority_important">重要</string>
+
+    <!-- 提醒选项 -->
+    <string name="reminder_none">无提醒</string>
+    <string name="reminder_5min">5分钟前</string>
+    <string name="reminder_15min">15分钟前</string>
+    <string name="reminder_30min">30分钟前</string>
+    <string name="reminder_1hour">1小时前</string>
+
+    <!-- 确认弹窗 -->
+    <string name="dialog_delete_title">删除日程</string>
+    <string name="dialog_delete_message">确定要删除这个日程吗？</string>
+    <string name="dialog_confirm">确认</string>
+    <string name="dialog_cancel">取消</string>
+
+    <!-- 选择时间 -->
+    <string name="pick_start_time">选择开始时间</string>
+    <string name="pick_end_time">选择结束时间</string>
+
+    <!-- Spinner 数组 -->
+    <string-array name="repeat_options">
+        <item>@string/repeat_none</item>
+        <item>@string/repeat_daily</item>
+        <item>@string/repeat_weekly</item>
+        <item>@string/repeat_monthly</item>
+        <item>@string/repeat_yearly</item>
+    </string-array>
+
+    <string-array name="reminder_options">
+        <item>@string/reminder_none</item>
+        <item>@string/reminder_5min</item>
+        <item>@string/reminder_15min</item>
+        <item>@string/reminder_30min</item>
+        <item>@string/reminder_1hour</item>
+    </string-array>
 </resources>
