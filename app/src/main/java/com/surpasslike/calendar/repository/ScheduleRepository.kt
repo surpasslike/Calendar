@@ -2,7 +2,9 @@ package com.surpasslike.calendar.repository
 
 import com.surpasslike.calendar.data.dao.ScheduleDao
 import com.surpasslike.calendar.data.entity.ScheduleEntity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 
 /*
@@ -55,7 +57,7 @@ class ScheduleRepository(private val scheduleDao: ScheduleDao) {
                 if (schedule.repeatRule == null) true
                 else schedule.repeatRule.matches(schedule.date, targetDate)
             }
-        }
+        }.flowOn(Dispatchers.Default) // map里的过滤逻辑放到计算线程中,防止主线程卡顿
     }
 
     // 查: 按ID查找具体的某一个
