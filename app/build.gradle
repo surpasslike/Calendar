@@ -58,4 +58,7 @@ dependencies {
     implementation libs.room.runtime
     implementation libs.room.ktx
     ksp libs.room.compiler
+
+    // 开源日历页面
+    implementation 'com.haibin:calendarview:3.7.1'
 }
