@@ -3,6 +3,7 @@ package com.surpasslike.calendar.data.entity
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.surpasslike.calendar.utils.RepeatRule
 
 @Entity(tableName = "schedules", indices = [Index(value = ["date"])])
 data class ScheduleEntity(
@@ -17,7 +18,7 @@ data class ScheduleEntity(
     val startTime: Long? = null, // 日程开始时间
     val endTime: Long? = null, // 日程结束时间
     val isAllDay: Boolean = false, // 是否全天
-    val repeatRule: String? = null, // 重复规则
+    val repeatRule: RepeatRule? = null, // 重复规则
     val reminderMinutes: Int? = null, // 提醒的提前分钟数,null表示不提醒
     val priority: Int = 0, // 优先级: 2=重要, 1=次重要, 0=日常
 )

@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.surpasslike.calendar.data.dao.ScheduleDao
 import com.surpasslike.calendar.data.entity.ScheduleEntity
+import com.surpasslike.calendar.utils.RepeatRuleConverter
 
 /*
 * @Database: 数据库,管理整个数据库,提供各种DAO的获取方法
@@ -14,6 +16,7 @@ import com.surpasslike.calendar.data.entity.ScheduleEntity
 * exportSchema = false不导出数据库结构文件
 * */
 @Database(entities = [ScheduleEntity::class], version = 1, exportSchema = false)
+@TypeConverters(RepeatRuleConverter::class) // 注册类型转换器, 让 Room 自动转换 RepeatRule ↔ String
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun scheduleDao(): ScheduleDao // 通过它来存取数据,相当于一个业务窗口
