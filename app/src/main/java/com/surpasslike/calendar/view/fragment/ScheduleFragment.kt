@@ -4,6 +4,7 @@ import android.view.View
 import android.widget.ArrayAdapter
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -44,6 +45,7 @@ class ScheduleFragment : BaseFragment<FragmentScheduleBinding>(FragmentScheduleB
     override fun initView() {
         val scheduleId = arguments?.getLong(ARG_SCHEDULE_ID, -1L) ?: -1L
         dateMillis = arguments?.getLong(ARG_DATE, -1L) ?: -1L
+        LogUtils.d(TAG, "initView: scheduleId=$scheduleId, dateMillis=$dateMillis")
 
         setupSpinners()
         setupAllDaySwitch()
@@ -54,9 +56,11 @@ class ScheduleFragment : BaseFragment<FragmentScheduleBinding>(FragmentScheduleB
 
         if (scheduleId > 0) {
             // 编辑模式: 加载日程
+            LogUtils.d(TAG, "编辑模式: 加载日程 id=$scheduleId")
             loadSchedule(scheduleId)
         } else {
             // 新增模式
+            LogUtils.d(TAG, "新增模式: dateMillis=$dateMillis")
             displayDate()
             mBinding.rbNormal.isChecked = true
         }
@@ -148,6 +152,7 @@ class ScheduleFragment : BaseFragment<FragmentScheduleBinding>(FragmentScheduleB
             val existing = editingSchedule
             if (existing != null) {
                 // 更新
+                LogUtils.d(TAG, "保存: 更新日程 id=${existing.id}, title=$title")
                 mViewModel.updateSchedule(
                     existing.copy(
                         title = title,
@@ -163,6 +168,7 @@ class ScheduleFragment : BaseFragment<FragmentScheduleBinding>(FragmentScheduleB
                 )
             } else {
                 // 新增
+                LogUtils.d(TAG, "保存: 新增日程 title=$title, date=$dateMillis")
                 mViewModel.insertSchedule(
                     ScheduleEntity(
                         title = title,
@@ -183,11 +189,16 @@ class ScheduleFragment : BaseFragment<FragmentScheduleBinding>(FragmentScheduleB
 
     private fun setupDeleteButton() {
         mBinding.btnDelete.setOnClickListener {
+            LogUtils.d(TAG, "点击删除按钮: id=${editingSchedule?.id}")
             ConfirmDialog(
                 context = requireContext(),
                 title = getString(R.string.dialog_delete_title),
                 message = getString(R.string.dialog_delete_message),
                 onConfirm = {
+                    LogUtils.d(
+                        TAG,
+                        "确认删除: id=${editingSchedule?.id}, title=${editingSchedule?.title}"
+                    )
                     editingSchedule?.let { mViewModel.deleteSchedule(it) }
                     parentFragmentManager.popBackStack()
                 }).show()
@@ -195,11 +206,14 @@ class ScheduleFragment : BaseFragment<FragmentScheduleBinding>(FragmentScheduleB
     }
 
     private fun loadSchedule(id: Long) {
+        LogUtils.d(TAG, "loadSchedule: id=$id")
         viewLifecycleOwner.lifecycleScope.launch {
             val schedule = mViewModel.getScheduleById(id) ?: run {
+                LogUtils.d(TAG, "loadSchedule: 未找到日程 id=$id, 返回上一页")
                 parentFragmentManager.popBackStack()
                 return@launch
             }
+            LogUtils.d(TAG, "loadSchedule: 加载成功, title=${schedule.title}")
             editingSchedule = schedule
             dateMillis = schedule.date
 

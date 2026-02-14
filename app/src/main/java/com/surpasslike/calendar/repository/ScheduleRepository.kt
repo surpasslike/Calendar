@@ -1,5 +1,6 @@
 package com.surpasslike.calendar.repository
 
+import com.blankj.utilcode.util.LogUtils
 import com.surpasslike.calendar.data.dao.ScheduleDao
 import com.surpasslike.calendar.data.entity.ScheduleEntity
 import kotlinx.coroutines.Dispatchers
@@ -12,23 +13,36 @@ import kotlinx.coroutines.flow.map
 * */
 class ScheduleRepository(private val scheduleDao: ScheduleDao) {
 
+    companion object {
+        private const val TAG = "ScheduleRepository"
+    }
+
     // 增: 新增日程到仓库中
     suspend fun insertSchedule(scheduleEntity: ScheduleEntity): Long {
-        return scheduleDao.insertSchedule(scheduleEntity)
+        LogUtils.d(
+            TAG,
+            "insertSchedule: title=${scheduleEntity.title}, date=${scheduleEntity.date}"
+        )
+        val id = scheduleDao.insertSchedule(scheduleEntity)
+        LogUtils.d(TAG, "insertSchedule: 完成, id=$id")
+        return id
     }
 
     // 删: 删除仓库中的某个日程
     suspend fun deleteSchedule(schedule: ScheduleEntity) {
+        LogUtils.d(TAG, "deleteSchedule: id=${schedule.id}, title=${schedule.title}")
         scheduleDao.deleteSchedule(schedule)
     }
 
     // 按 id 删除
     suspend fun deleteScheduleById(id: Long) {
+        LogUtils.d(TAG, "deleteScheduleById: id=$id")
         scheduleDao.deleteScheduleById(id)
     }
 
     // 改: 修改已有日程信息
     suspend fun updateSchedule(schedule: ScheduleEntity) {
+        LogUtils.d(TAG, "updateSchedule: id=${schedule.id}, title=${schedule.title}")
         scheduleDao.updateSchedule(schedule)
     }
 
@@ -52,16 +66,21 @@ class ScheduleRepository(private val scheduleDao: ScheduleDao) {
     //     C: MONTHLY.matches(1769875200000L, 1770566400000L) → "01"!="09" → 过滤掉
     //   最终结果: A + B = 2条
     fun observeSchedulesByDate(targetDate: Long): Flow<List<ScheduleEntity>> {
+        LogUtils.d(TAG, "observeSchedulesByDate: targetDate=$targetDate")
         return scheduleDao.observeSchedulesByDate(targetDate).map { list ->
-            list.filter { schedule ->
+            LogUtils.d(TAG, "observeSchedulesByDate: DAO粗筛返回 ${list.size} 条")
+            val filtered = list.filter { schedule ->
                 if (schedule.repeatRule == null) true
                 else schedule.repeatRule.matches(schedule.date, targetDate)
             }
+            LogUtils.d(TAG, "observeSchedulesByDate: 精筛后剩余 ${filtered.size} 条")
+            filtered
         }.flowOn(Dispatchers.Default) // map里的过滤逻辑放到计算线程中,防止主线程卡顿
     }
 
     // 查: 按ID查找具体的某一个
     suspend fun getScheduleById(id: Long): ScheduleEntity? {
+        LogUtils.d(TAG, "getScheduleById: id=$id")
         return scheduleDao.getScheduleById(id)
     }
 }

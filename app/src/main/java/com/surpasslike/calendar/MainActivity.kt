@@ -3,15 +3,21 @@ package com.surpasslike.calendar
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.blankj.utilcode.util.BarUtils
+import com.blankj.utilcode.util.LogUtils
 import com.surpasslike.calendar.databinding.ActivityMainBinding
 import com.surpasslike.calendar.view.fragment.CalendarFragment
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        private const val TAG = "MainActivity"
+    }
+
     private lateinit var mBinding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        LogUtils.d(TAG, "onCreate")
 
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
@@ -21,6 +27,7 @@ class MainActivity : AppCompatActivity() {
         BarUtils.transparentStatusBar(this)
 
         if (savedInstanceState == null) {
+            LogUtils.d(TAG, "首次创建, 加载 CalendarFragment")
             supportFragmentManager.beginTransaction()
                 .add(mBinding.fragmentContainer.id, CalendarFragment()).commit()
         }

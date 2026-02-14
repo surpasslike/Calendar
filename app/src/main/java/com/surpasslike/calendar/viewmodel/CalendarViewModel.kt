@@ -3,6 +3,7 @@ package com.surpasslike.calendar.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.blankj.utilcode.util.LogUtils
 import com.surpasslike.calendar.MyApplication
 import com.surpasslike.calendar.data.entity.ScheduleEntity
 import com.surpasslike.calendar.repository.ScheduleRepository
@@ -17,11 +18,27 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
     // 管理日程数据的增删改查
     private val scheduleRepository: ScheduleRepository
 
+    companion object {
+        private const val TAG = "CalendarViewModel"
+
+        // 获取今天零点的毫秒时间戳
+        private fun getTodayMillis(): Long {
+            return Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+        }
+    }
+
     init {
+        LogUtils.d(TAG, "init: 开始初始化")
         // 通过application获取数据库appDatabase和DAO,创建Repository
         val appDatabase = (application as MyApplication).appDatabase // 数据库实例,只会初始化一次,让整个应用只有一个数据库实例,避免数据混乱
         val scheduleDao = appDatabase.scheduleDao() // 存取窗口,在Repository里执行具体的SQL操作
         scheduleRepository = ScheduleRepository(scheduleDao) // 管理者,通过它在CalendarViewModel里调用增删改查
+        LogUtils.d(TAG, "init: 初始化完成")
     }
 
     // 当前选中的日期(毫秒,精确到当天零点)
@@ -34,6 +51,7 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
 
     // 切换选中日期
     fun selectDate(dateMillis: Long) {
+        LogUtils.d(TAG, "selectDate: dateMillis=$dateMillis")
         _selectedDate.value = dateMillis
     }
 
@@ -56,6 +74,7 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
     // viewModelScope: ViewModel自带的协程作用域, ViewModel销毁时自动取消, 不会内存泄漏
     // launch: 启动一个协程, 因为 insertSchedule 是 suspend 函数, 必须在协程中调用
     fun insertSchedule(schedule: ScheduleEntity) {
+        LogUtils.d(TAG, "insertSchedule: title=${schedule.title}")
         viewModelScope.launch {
             scheduleRepository.insertSchedule(schedule)
         }
@@ -63,6 +82,7 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
 
     // 删: 删除日程
     fun deleteSchedule(schedule: ScheduleEntity) {
+        LogUtils.d(TAG, "deleteSchedule: id=${schedule.id}, title=${schedule.title}")
         viewModelScope.launch {
             scheduleRepository.deleteSchedule(schedule)
         }
@@ -70,6 +90,7 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
 
     // 删: 按id删除日程
     fun deleteScheduleById(id: Long) {
+        LogUtils.d(TAG, "deleteScheduleById: id=$id")
         viewModelScope.launch {
             scheduleRepository.deleteScheduleById(id)
         }
@@ -77,20 +98,10 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
 
     // 改: 修改日程
     fun updateSchedule(schedule: ScheduleEntity) {
+        LogUtils.d(TAG, "updateSchedule: id=${schedule.id}, title=${schedule.title}")
         viewModelScope.launch {
             scheduleRepository.updateSchedule(schedule)
         }
     }
 
-    companion object {
-        // 获取今天零点的毫秒时间戳
-        private fun getTodayMillis(): Long {
-            return Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
-        }
-    }
 }
