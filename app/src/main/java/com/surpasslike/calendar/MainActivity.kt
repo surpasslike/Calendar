@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
         // 设置沉浸式状态栏 (透明 + 内容延伸至状态栏底部),如果上方有控件,记得加paddingTop,否则内容会和系统时间、电池图标重叠
         // 这样日历背景图可以铺满整个屏幕顶部
         BarUtils.transparentStatusBar(this)
+        BarUtils.setStatusBarLightMode(this, true) // 状态栏图标和文字变为深色(黑色),适配白色背景
 
         if (savedInstanceState == null) {
             LogUtils.d(TAG, "首次创建, 加载 CalendarFragment")
