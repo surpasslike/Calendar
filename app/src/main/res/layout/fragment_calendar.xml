@@ -9,6 +9,18 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <TextView
+            android:id="@+id/tv_year_month"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:paddingStart="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp"
+            android:textSize="18sp"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+
         <com.haibin.calendarview.CalendarView
             android:id="@+id/calendar_view"
             android:layout_width="match_parent"

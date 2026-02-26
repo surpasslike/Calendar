@@ -28,6 +28,14 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding>(FragmentCalendarB
         mBinding.rvCalendar.layoutManager = LinearLayoutManager(requireContext())
         mBinding.rvCalendar.adapter = mAdapter
 
+        // 初始化年月显示
+        updateYearMonth(mBinding.calendarView.curYear, mBinding.calendarView.curMonth)
+
+        // CalendarView 月份切换监听
+        mBinding.calendarView.setOnMonthChangeListener { year, month ->
+            updateYearMonth(year, month)
+        }
+
         // CalendarView 日期选择监听
         mBinding.calendarView.setOnCalendarSelectListener(object :
             CalendarView.OnCalendarSelectListener {
@@ -38,6 +46,7 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding>(FragmentCalendarB
                 val dateMillis = calendarToMillis(calendar.year, calendar.month, calendar.day)
                 LogUtils.d(TAG, "选择日期: ${calendar.year}-${calendar.month}-${calendar.day}, dateMillis=$dateMillis")
                 mCalendarViewModel.selectDate(dateMillis)
+                updateYearMonth(calendar.year, calendar.month)
             }
         })
 
@@ -73,6 +82,13 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding>(FragmentCalendarB
             .replace(R.id.fragment_container, fragment)
             .addToBackStack(null)
             .commit()
+    }
+
+    /*
+     * 更新顶部年月显示, 如 "2026年2月"
+     */
+    private fun updateYearMonth(year: Int, month: Int) {
+        mBinding.tvYearMonth.text = "${year}年${month}月"
     }
 
     // 将年月日转成当天零点的毫秒时间戳
