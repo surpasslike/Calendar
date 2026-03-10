@@ -52,4 +52,8 @@ interface ScheduleDao {
     // 查: 按ID查找具体的某一个
     @Query("SELECT * FROM schedules WHERE id = :id")
     suspend fun getScheduleById(id: Long): ScheduleEntity?
+
+    // 查: 获取所有设置了提醒且有开始时间的日程(用于开机重注册闹钟)
+    @Query("SELECT * FROM schedules WHERE reminderMinutes IS NOT NULL AND startTime IS NOT NULL")
+    suspend fun getSchedulesWithReminder(): List<ScheduleEntity>
 }

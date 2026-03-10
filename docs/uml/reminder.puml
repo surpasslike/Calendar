@@ -1,0 +1,102 @@
+@startuml reminder
+
+title 日程提醒通知功能 - 类图
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "reminder" #E8F5E9 {
+
+    class ReminderScheduler <<object>> {
+        - TAG : String
+        + scheduleAlarm(context: Context, schedule: ScheduleEntity)
+        + cancelAlarm(context: Context, scheduleId: Long)
+        - calculateNextRepeatTriggerTime(schedule: ScheduleEntity, reminderMin: Int) : Long?
+        - buildIntent(context: Context, schedule: ScheduleEntity) : Intent
+    }
+
+    class ReminderReceiver <<BroadcastReceiver>> {
+        - CHANNEL_ID : String
+        - CHANNEL_NAME : String
+        + onReceive(context: Context, intent: Intent)
+        - createNotificationChannel(context: Context)
+    }
+
+    class BootReceiver <<BroadcastReceiver>> {
+        + onReceive(context: Context, intent: Intent)
+    }
+
+    class NotificationHelper <<object>> {
+        - TAG : String
+        + registerPermissionLauncher(fragment: Fragment) : ActivityResultLauncher<String>
+        + requestIfNeeded(fragment: Fragment, launcher: ActivityResultLauncher<String>)
+    }
+}
+
+package "data" #E3F2FD {
+    interface ScheduleDao <<@Dao>> {
+        + insertSchedule(schedule: ScheduleEntity) : Long
+        + deleteSchedule(schedule: ScheduleEntity)
+        + deleteScheduleById(id: Long)
+        + updateSchedule(schedule: ScheduleEntity)
+        + observeSchedulesByDate(targetDate: Long) : Flow<List<ScheduleEntity>>
+        + getScheduleById(id: Long) : ScheduleEntity?
+        + **getSchedulesWithReminder()** : List<ScheduleEntity>
+    }
+
+    class ScheduleEntity <<@Entity>> {
+        + id : Long
+        + title : String
+        + description : String?
+        + date : Long
+        + startTime : Long?
+        + endTime : Long?
+        + isAllDay : Boolean
+        + repeatRule : RepeatRule?
+        + reminderMinutes : Int?
+        + priority : Int
+    }
+}
+
+package "viewmodel" #FFF3E0 {
+    class CalendarViewModel <<AndroidViewModel>> {
+        - scheduleRepository : ScheduleRepository
+        + insertSchedule(schedule: ScheduleEntity)
+        + updateSchedule(schedule: ScheduleEntity)
+        + deleteSchedule(schedule: ScheduleEntity)
+        + deleteScheduleById(id: Long)
+    }
+}
+
+package "view" #FCE4EC {
+    class ScheduleFragment <<BaseFragment>> {
+        - notificationPermissionLauncher : ActivityResultLauncher<String>
+        + onCreate(savedInstanceState: Bundle?)
+        - setupSaveButton()
+    }
+}
+
+package "utils" #F3E5F5 {
+    enum RepeatRule {
+        DAILY
+        WEEKLY
+        MONTHLY
+        YEARLY
+        + matches(originDate: Long, targetDate: Long) : Boolean
+    }
+}
+
+' ===== 关系 =====
+
+ReminderReceiver ..> ReminderScheduler : 重复日程\n注册下一次闹钟
+ReminderReceiver ..> NotificationManager : 发送通知
+ReminderScheduler ..> ReminderReceiver : PendingIntent\n目标
+ReminderScheduler ..> ScheduleEntity : 读取日程信息
+ReminderScheduler ..> RepeatRule : 计算下次触发
+BootReceiver ..> ScheduleDao : 查询有提醒的日程
+BootReceiver ..> ReminderScheduler : 重新注册闹钟
+CalendarViewModel ..> ReminderScheduler : insert/update/delete\n时调度闹钟
+ScheduleFragment ..> NotificationHelper : 保存时请求\n通知权限
+ScheduleFragment ..> CalendarViewModel : CRUD操作
+
+@enduml

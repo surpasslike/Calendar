@@ -7,6 +7,7 @@ import com.blankj.utilcode.util.LogUtils
 import com.surpasslike.calendar.MyApplication
 import com.surpasslike.calendar.data.entity.ScheduleEntity
 import com.surpasslike.calendar.repository.ScheduleRepository
+import com.surpasslike.calendar.reminder.ReminderScheduler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -76,7 +77,11 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
     fun insertSchedule(schedule: ScheduleEntity) {
         LogUtils.d(TAG, "insertSchedule: title=${schedule.title}")
         viewModelScope.launch {
-            scheduleRepository.insertSchedule(schedule)
+            val id = scheduleRepository.insertSchedule(schedule)
+            val saved = schedule.copy(id = id)
+            if (saved.reminderMinutes != null && saved.startTime != null) {
+                ReminderScheduler.scheduleAlarm(getApplication(), saved)
+            }
         }
     }
 
@@ -84,6 +89,7 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
     fun deleteSchedule(schedule: ScheduleEntity) {
         LogUtils.d(TAG, "deleteSchedule: id=${schedule.id}, title=${schedule.title}")
         viewModelScope.launch {
+            ReminderScheduler.cancelAlarm(getApplication(), schedule.id)
             scheduleRepository.deleteSchedule(schedule)
         }
     }
@@ -92,6 +98,7 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
     fun deleteScheduleById(id: Long) {
         LogUtils.d(TAG, "deleteScheduleById: id=$id")
         viewModelScope.launch {
+            ReminderScheduler.cancelAlarm(getApplication(), id)
             scheduleRepository.deleteScheduleById(id)
         }
     }
@@ -100,7 +107,11 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
     fun updateSchedule(schedule: ScheduleEntity) {
         LogUtils.d(TAG, "updateSchedule: id=${schedule.id}, title=${schedule.title}")
         viewModelScope.launch {
+            ReminderScheduler.cancelAlarm(getApplication(), schedule.id)
             scheduleRepository.updateSchedule(schedule)
+            if (schedule.reminderMinutes != null && schedule.startTime != null) {
+                ReminderScheduler.scheduleAlarm(getApplication(), schedule)
+            }
         }
     }
 

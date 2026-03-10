@@ -1,0 +1,89 @@
+@startuml reminder_sequence
+
+title 日程提醒通知功能 - 时序图
+
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceParticipantPadding 20
+
+actor 用户
+participant "ScheduleFragment" as SF
+participant "NotificationHelper" as NH
+participant "CalendarViewModel" as VM
+participant "ScheduleRepository" as Repo
+participant "ReminderScheduler" as RS
+participant "AlarmManager" as AM
+participant "ReminderReceiver" as RR
+participant "NotificationManager" as NM
+
+== 新增日程(设置提醒) ==
+
+用户 -> SF : 填写日程,选择提醒时间,点击保存
+SF -> NH : requestIfNeeded()\n请求通知权限
+NH --> 用户 : 弹出权限对话框(首次)
+SF -> VM : insertSchedule(schedule)
+
+activate VM
+VM -> Repo : insertSchedule(schedule)
+Repo --> VM : 返回 id
+VM -> RS : scheduleAlarm(context, schedule)
+activate RS
+RS -> RS : 计算 triggerTime\n= startTime - reminderMinutes * 60000
+RS -> AM : setExactAndAllowWhileIdle(\nRTC_WAKEUP, triggerTime, pendingIntent)
+deactivate RS
+deactivate VM
+
+== 闹钟触发(发送通知) ==
+
+AM -> RR : onReceive(context, intent)
+activate RR
+RR -> RR : 从 Intent extras\n读取日程信息
+RR -> NM : createNotificationChannel()
+RR -> NM : notify(id, notification)
+NM --> 用户 : 显示通知栏提醒
+用户 -> NM : 点击通知
+NM -> SF : 打开 MainActivity
+
+alt 重复日程
+    RR -> RS : scheduleAlarm()\n注册下一次闹钟
+    RS -> AM : setExactAndAllowWhileIdle()
+end
+deactivate RR
+
+== 修改日程 ==
+
+用户 -> SF : 修改提醒时间,点击保存
+SF -> VM : updateSchedule(schedule)
+activate VM
+VM -> RS : cancelAlarm(context, id)
+RS -> AM : cancel(pendingIntent)
+VM -> Repo : updateSchedule(schedule)
+VM -> RS : scheduleAlarm(context, schedule)
+RS -> AM : setExactAndAllowWhileIdle()
+deactivate VM
+
+== 删除日程 ==
+
+用户 -> SF : 点击删除,确认
+SF -> VM : deleteSchedule(schedule)
+activate VM
+VM -> RS : cancelAlarm(context, id)
+RS -> AM : cancel(pendingIntent)
+VM -> Repo : deleteSchedule(schedule)
+deactivate VM
+
+== 设备重启 ==
+
+AM -> AM : 重启后闹钟丢失
+participant "BootReceiver" as BR
+participant "ScheduleDao" as DAO
+AM -> BR : ACTION_BOOT_COMPLETED
+activate BR
+BR -> DAO : getSchedulesWithReminder()
+DAO --> BR : List<ScheduleEntity>
+loop 每个有提醒的日程
+    BR -> RS : scheduleAlarm(context, schedule)
+    RS -> AM : setExactAndAllowWhileIdle()
+end
+deactivate BR
+
+@enduml

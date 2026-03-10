@@ -1,7 +1,9 @@
 package com.surpasslike.calendar.view.fragment
 
+import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
+import androidx.activity.result.ActivityResultLauncher
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.LogUtils
@@ -13,6 +15,7 @@ import com.surpasslike.calendar.utils.RepeatRule
 import com.blankj.utilcode.util.ToastUtils
 import com.surpasslike.calendar.view.dialog.ConfirmDialog
 import com.surpasslike.calendar.view.dialog.DateTimePickerDialog
+import com.surpasslike.calendar.reminder.NotificationHelper
 import com.surpasslike.calendar.viewmodel.CalendarViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -42,6 +45,14 @@ class ScheduleFragment : BaseFragment<FragmentScheduleBinding>(FragmentScheduleB
 
     // 提醒映射: Spinner index → minutes?
     private val reminderMinutes = arrayOf(null, 5, 15, 30, 60)
+
+    // 通知权限请求 Launcher
+    private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        notificationPermissionLauncher = NotificationHelper.registerPermissionLauncher(this)
+    }
 
     override fun initView() {
         val scheduleId = arguments?.getLong(ARG_SCHEDULE_ID, -1L) ?: -1L
@@ -219,6 +230,12 @@ class ScheduleFragment : BaseFragment<FragmentScheduleBinding>(FragmentScheduleB
                     )
                 )
             }
+
+            // 设置了提醒时,请求通知权限
+            if (reminder != null) {
+                NotificationHelper.requestIfNeeded(this, notificationPermissionLauncher)
+            }
+
             parentFragmentManager.popBackStack()
         }
     }
