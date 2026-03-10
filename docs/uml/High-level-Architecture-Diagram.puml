@@ -1,53 +1,73 @@
-  @startuml
-  skinparam dpi 300
-  skinparam backgroundColor #FFFFFF
-  skinparam defaultFontSize 14
+@startuml
+skinparam dpi 300
 
-  title Calendar App 架构图 (MVVM)
+' === 样式设置 ===
+skinparam package {
+    BackgroundColor white
+    BorderColor black
+    FontColor black
+    FontSize 14
+    FontStyle bold
+    BorderThickness 1
+}
 
-  ' === View 界面层 ===
-  package "View 界面层" <<view>> {
-      [日历主界面\nCalendarFragment]
-      [日程编辑界面\nScheduleFragment]
-      [习惯编辑界面\nHabitFragment]
-  }
+skinparam component {
+    BackgroundColor white
+    BorderColor black
+    FontSize 11
+    BorderThickness 1
+}
 
-  ' === ViewModel 逻辑层 ===
-  package "ViewModel 逻辑层" <<viewmodel>> {
-      [CalendarViewModel\n处理日历和列表逻辑]
-      [ScheduleViewModel\n处理日程增删改]
-      [HabitViewModel\n处理习惯增删改]
-  }
+' === 标题 ===
+title <b>Calendar App 架构图 (MVVM)</b>
 
-  ' === Repository 仓库层 ===
-  package "Repository 仓库层" <<repository>> {
-      [CalendarRepository\n统一管理数据访问]
-  }
+' === 分层结构 ===
+package "View 界面层 (UI)" {
+    component "CalendarFragment.kt\n(日历主界面)" as view1
+    component "ScheduleFragment.kt\n(日程编辑界面)" as view2
+    component "ScheduleAdapter.kt\n(列表适配器)" as adapter
+}
 
-  ' === Data 数据层 ===
-  package "Data 数据层" <<data>> {
-      [Room 数据库\nScheduleDao / HabitDao / HabitRecordDao]
-      [实体类\nSchedule / Habit / HabitRecord]
-  }
+package "ViewModel 逻辑层" {
+    component "CalendarViewModel.kt\n(业务逻辑处理)" as vm
+}
 
-  ' === 通知模块 ===
-  package "通知模块" <<notification>> {
-      [AlarmManager\n定时触发]
-      [NotificationManager\n发送通知]
-  }
+package "Repository 仓库层" {
+    component "ScheduleRepository.kt\n(数据访问中转)" as repo
+}
 
-  ' === 连接关系 ===
-  [日历主界面\nCalendarFragment] -down-> [CalendarViewModel\n处理日历和列表逻辑] : 观察数据
-  [日程编辑界面\nScheduleFragment] -down-> [ScheduleViewModel\n处理日程增删改] : 观察数据
-  [习惯编辑界面\nHabitFragment] -down-> [HabitViewModel\n处理习惯增删改] : 观察数据
+package "Data 数据层 (Local)" {
+    component "AppDatabase.kt\n(Room 数据库实例)" as db_inst
+    component "ScheduleDao.kt\n(SQL 访问接口)" as dao
+    component "ScheduleEntity.kt\n(数据实体模型)" as entity
+}
 
-  [CalendarViewModel\n处理日历和列表逻辑] -down-> [CalendarRepository\n统一管理数据访问]
-  [ScheduleViewModel\n处理日程增删改] -down-> [CalendarRepository\n统一管理数据访问]
-  [HabitViewModel\n处理习惯增删改] -down-> [CalendarRepository\n统一管理数据访问]
+package "提醒/通知模块 (System)" {
+    component "ReminderScheduler.kt\n(闹钟调度)" as reminder
+    component "ReminderReceiver.kt\n(广播接收)" as receiver
+    component "NotificationHelper.kt\n(权限与通道)" as notif_help
+    component "AlarmManager\n(系统闹钟服务)" as alarm
+}
 
-  [CalendarRepository\n统一管理数据访问] -down-> [Room 数据库\nScheduleDao / HabitDao / HabitRecordDao]
-  [CalendarRepository\n统一管理数据访问] .right.> [AlarmManager\n定时触发]
+' === 连接关系 ===
+view1 -down-> vm : 观察数据
+view2 -down-> vm : 调用业务逻辑
+adapter <-up- view1 : 数据绑定
 
-  [AlarmManager\n定时触发] -down-> [NotificationManager\n发送通知]
+vm -down-> repo : 调用数据接口
+vm -right-> reminder : 调度闹钟提醒
 
-  @enduml
+repo -down-> dao : 调用存取方法
+dao -down-> db_inst : 运行于
+dao ..> entity : 操作对象
+
+reminder -down-> alarm : 注册精确闹钟
+alarm -down-> receiver : 到点发送广播
+receiver -down-> notif_help : 触发系统通知
+
+' === 注释 ===
+note right of vm : 处理 UI 状态与核心业务
+note bottom of repo : 屏蔽数据源细节
+note bottom of entity : 对应数据库 schedules 表
+
+@enduml
